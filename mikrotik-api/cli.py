@@ -6,10 +6,10 @@ MikroTik RouterOS API 命令行工具
     python cli.py <host> [command] [options]
 
 示例:
-    python cli.py 10.0.5.4 status           # 查看设备状态
-    python cli.py 10.0.5.4 firewall         # 查看防火墙
-    python cli.py 10.0.5.4 interfaces       # 查看接口
-    python cli.py 10.0.5.4 cmd /ip/address/print  # 执行自定义命令
+    python cli.py 192.168.1.1 status           # 查看设备状态
+    python cli.py 192.168.1.1 firewall         # 查看防火墙
+    python cli.py 192.168.1.1 interfaces       # 查看接口
+    python cli.py 192.168.1.1 cmd /ip/address/print  # 执行自定义命令
 """
 
 import sys

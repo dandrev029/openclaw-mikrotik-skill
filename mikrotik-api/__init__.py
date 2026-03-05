@@ -6,7 +6,7 @@ MikroTik RouterOS API Client
 用法:
     from mikrotik_api import MikroTikAPI
     
-    api = MikroTikAPI('10.0.5.4', username='admin', password='')
+    api = MikroTikAPI('192.168.1.1', username='admin', password='')
     api.connect()
     
     # 获取系统信息

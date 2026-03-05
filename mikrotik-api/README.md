@@ -14,22 +14,22 @@ MikroTik RouterOS API Python 客户端和命令行工具。
 cd /root/.openclaw/workspace/tools/mikrotik-api
 
 # 查看设备状态
-python3 cli.py 10.0.5.4 status
+python3 cli.py 192.168.1.1 status
 
 # 查看防火墙规则
-python3 cli.py 10.0.5.4 firewall
+python3 cli.py 192.168.1.1 firewall
 
 # 查看网络接口
-python3 cli.py 10.0.5.4 interfaces
+python3 cli.py 192.168.1.1 interfaces
 
 # 查看路由表
-python3 cli.py 10.0.5.4 routes
+python3 cli.py 192.168.1.1 routes
 
 # 执行自定义命令
-python3 cli.py 10.0.5.4 cmd /system/resource/print
+python3 cli.py 192.168.1.1 cmd /system/resource/print
 
 # 指定用户名密码
-python3 cli.py 10.0.5.4 status -u admin -p yourpassword
+python3 cli.py 192.168.1.1 status -u admin -p yourpassword
 ```
 
 ### Python 库
@@ -38,7 +38,7 @@ python3 cli.py 10.0.5.4 status -u admin -p yourpassword
 from mikrotik_api import MikroTikAPI, QuickCommands
 
 # 连接设备
-api = MikroTikAPI('10.0.5.4', username='admin', password='')
+api = MikroTikAPI('192.168.1.1', username='admin', password='')
 api.connect()
 api.login()
 
@@ -70,7 +70,7 @@ api.disconnect()
 ```python
 from mikrotik_api import MikroTikAPI, QuickCommands
 
-with MikroTikAPI('10.0.5.4') as api:
+with MikroTikAPI('192.168.1.1') as api:
     api.login()
     quick = QuickCommands(api)
     quick.print_status()

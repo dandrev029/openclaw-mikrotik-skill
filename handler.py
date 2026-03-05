@@ -15,9 +15,9 @@ from commands import QuickCommands
 
 def get_device_config(device_name=None):
     """获取设备配置（从 TOOLS.md 或环境变量）"""
-    # 默认设备配置
+    # 默认设备配置（示例，用户需在 TOOLS.md 中配置自己的设备）
     devices = {
-        'office': {'host': '10.0.5.4', 'username': 'admin', 'password': ''},
+        'office': {'host': '192.168.1.1', 'username': 'admin', 'password': ''},
     }
     
     if device_name:

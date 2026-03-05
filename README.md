@@ -39,7 +39,7 @@ openclaw gateway restart
 ```markdown
 ### MikroTik 设备
 
-- **office**: 10.0.5.4, admin, 空密码
+- **office**: 192.168.1.1, admin, 空密码
 - **home**: 192.168.88.1, admin, yourpassword
 ```
 
