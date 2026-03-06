@@ -12,13 +12,19 @@
 
 ## 安装
 
-### 方法 1: 通过 ClawHub（推荐）
+### 方法 1: 手动安装（当前可用）
 
 ```bash
-npx clawhub install mikrotik
+# 技能已内置在 OpenClaw 中，无需安装
+# 只需在 TOOLS.md 中配置设备信息即可使用
 ```
 
-### 方法 2: 手动安装
+### 方法 2: 通过 ClawHub（即将上线）
+
+```bash
+# 待发布到 ClawHub 后可用
+npx clawhub install mikrotik
+```
 
 ```bash
 # 克隆仓库
