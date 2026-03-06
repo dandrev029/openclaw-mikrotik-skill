@@ -47,16 +47,15 @@ export MIKROTIK_PASS=yourpassword  # 有密码
 
 ## 用法
 
-### 查看设备状态
+### 📊 设备状态
 
 ```
 查看 mikrotik 设备状态
 查看工位 mikrotik 状态
-mikrotik 10.0.5.4 状态
 检查路由器运行情况
 ```
 
-### 查看防火墙
+### 🔥 防火墙
 
 ```
 查看防火墙规则
@@ -65,7 +64,7 @@ mikrotik 防火墙配置
 查看工位防火墙
 ```
 
-### 查看网络接口
+### 🔌 网络接口
 
 ```
 查看网络接口
@@ -73,7 +72,55 @@ mikrotik 接口列表
 显示 IP 地址配置
 ```
 
-### 执行命令
+### 📋 DHCP
+
+```
+查看 DHCP 配置
+显示 DHCP 租约
+mikrotik dhcp
+```
+
+### 📡 ARP 表
+
+```
+查看 ARP 表
+mikrotik arp
+显示 ARP 缓存
+```
+
+### 🔐 WireGuard
+
+```
+查看 WireGuard 配置
+mikrotik wireguard
+显示 VPN 对等体
+```
+
+### 👤 用户
+
+```
+查看用户配置
+mikrotik users
+显示 PPP 用户
+```
+
+### 📝 日志
+
+```
+查看系统日志
+mikrotik logs
+显示最近日志
+```
+
+### 🔧 服务
+
+```
+查看系统服务
+mikrotik services
+显示 API/SSH 端口
+```
+
+### 🎯 自定义命令
 
 ```
 在 mikrotik 上执行 /system/resource/print
@@ -81,7 +128,7 @@ mikrotik 接口列表
 在工位设备上执行 /interface/print
 ```
 
-### 多设备支持
+### 🖥️ 多设备支持
 
 如果配置了多个设备，可以在命令中指定设备名称：
 
@@ -134,10 +181,18 @@ skills/mikrotik/
 
 ## 更新日志
 
+### v1.2.0 (2026-03-06)
+- 🆕 新增 DHCP 配置查看（租约、服务器）
+- 🆕 新增 ARP 表查看
+- 🆕 新增 WireGuard 对等体状态
+- 🆕 新增用户配置（系统用户、PPP 用户）
+- 🆕 新增系统日志查看
+- 🆕 新增系统服务查看（API、SSH、WWW 等）
+
 ### v1.1.0 (2026-03-06)
 - ✅ 修复凭证配置：支持 TOOLS.md 和环境变量
 - ✅ 修复响应解析：完整支持多条目返回
-- ✅ 改进连接可靠性：改用阻塞模式 + select 超时
+- ✅ 改进连接可靠性：改用非阻塞模式 + select 超时
 - ✅ 增强错误提示：友好的配置缺失提示
 
 ### v1.0.0 (2026-03-05)

@@ -38,6 +38,40 @@ class SystemCommands:
         results = self.api.run_command('/system/health/print')
         return results[0] if results else {}
     
+    def get_uptime(self) -> str:
+        """获取运行时间"""
+        resource = self.get_resource()
+        return resource.get('uptime', 'N/A')
+    
+    def get_users(self) -> List[Dict]:
+        """获取系统用户列表"""
+        return self.api.run_command('/user/print')
+    
+    def get_services(self) -> List[Dict]:
+        """获取系统服务（API、SSH、WWW 等）"""
+        return self.api.run_command('/ip/service/print')
+    
+    def get_scheduler(self) -> List[Dict]:
+        """获取定时任务列表"""
+        return self.api.run_command('/system/scheduler/print')
+    
+    def get_scripts(self) -> List[Dict]:
+        """获取脚本列表"""
+        return self.api.run_command('/system/script/print')
+    
+    def get_logging(self) -> List[Dict]:
+        """获取日志配置"""
+        return self.api.run_command('/system/logging/print')
+    
+    def get_recent_logs(self, count: int = 20) -> List[Dict]:
+        """
+        获取最近日志
+        
+        Args:
+            count: 日志条数
+        """
+        return self.api.run_command('/log/print', [f'=.count={count}'])
+    
     def reboot(self):
         """重启设备"""
         self.api.run_command('/system/reboot')
@@ -65,6 +99,10 @@ class FirewallCommands:
         """获取 Mangle 规则"""
         return self.api.run_command('/ip/firewall/mangle/print')
     
+    def get_address_lists(self) -> List[Dict]:
+        """获取地址列表"""
+        return self.api.run_command('/ip/firewall/address-list/print')
+    
     def get_active_connections(self, count: int = 100) -> List[Dict]:
         """获取活动连接"""
         return self.api.run_command('/ip/firewall/active/print', 
@@ -74,6 +112,15 @@ class FirewallCommands:
         """获取连接统计"""
         results = self.api.run_command('/ip/firewall/connection/print', ['=count-only='])
         return {'total': len(results)} if results else {}
+    
+    def get_raw_rules(self) -> List[Dict]:
+        """获取 Raw 规则（预处理防火墙）"""
+        return self.api.run_command('/ip/firewall/raw/print')
+    
+    def get_connection_tracking(self) -> Dict:
+        """获取连接跟踪状态"""
+        results = self.api.run_command('/ip/firewall/connection/print', ['=count-only='])
+        return {'active_connections': len(results)} if results else {}
 
 
 class NetworkCommands:
@@ -102,6 +149,10 @@ class NetworkCommands:
         """获取 DHCP 租约"""
         return self.api.run_command('/ip/dhcp-server/lease/print')
     
+    def get_dhcp_servers(self) -> List[Dict]:
+        """获取 DHCP 服务器配置"""
+        return self.api.run_command('/ip/dhcp-server/print')
+    
     def get_arp(self) -> List[Dict]:
         """获取 ARP 表"""
         return self.api.run_command('/ip/arp/print')
@@ -109,6 +160,56 @@ class NetworkCommands:
     def get_neighbors(self) -> List[Dict]:
         """获取邻居发现"""
         return self.api.run_command('/ip/neighbor/print')
+    
+    def get_wireguard_peers(self) -> List[Dict]:
+        """获取 WireGuard 对等体状态"""
+        return self.api.run_command('/interface/wireguard/peer/print')
+    
+    def get_vlan_interfaces(self) -> List[Dict]:
+        """获取 VLAN 接口列表"""
+        return self.api.run_command('/interface/vlan/print')
+    
+    def get_bridge_ports(self) -> List[Dict]:
+        """获取桥接端口列表"""
+        return self.api.run_command('/interface/bridge/port/print')
+    
+    def get_traffic_stats(self, interface: str = '') -> List[Dict]:
+        """
+        获取接口流量统计
+        
+        Args:
+            interface: 指定接口名，空则返回所有接口
+        """
+        if interface:
+            return self.api.run_command('/interface/print', [f'=.where=name={interface}'])
+        return self.api.run_command('/interface/print')
+
+
+class UserCommands:
+    """用户和 PPP 相关命令"""
+    
+    def __init__(self, api: MikroTikAPI):
+        self.api = api
+    
+    def get_ppp_users(self) -> List[Dict]:
+        """获取 PPP 用户（PPPoE/PPTP/L2TP）"""
+        return self.api.run_command('/ppp/secret/print')
+    
+    def get_ppp_active(self) -> List[Dict]:
+        """获取活跃 PPP 连接"""
+        return self.api.run_command('/ppp/active/print')
+    
+    def get_hotspot_users(self) -> List[Dict]:
+        """获取 Hotspot 用户"""
+        return self.api.run_command('/ip/hotspot/user/print')
+    
+    def get_hotspot_active(self) -> List[Dict]:
+        """获取活跃 Hotspot 会话"""
+        return self.api.run_command('/ip/hotspot/active/print')
+    
+    def get_user_groups(self) -> List[Dict]:
+        """获取用户组"""
+        return self.api.run_command('/user/group/print')
 
 
 class QuickCommands:
@@ -119,6 +220,7 @@ class QuickCommands:
         self.system = SystemCommands(api)
         self.firewall = FirewallCommands(api)
         self.network = NetworkCommands(api)
+        self.user = UserCommands(api)
     
     def status(self) -> Dict:
         """获取设备完整状态"""

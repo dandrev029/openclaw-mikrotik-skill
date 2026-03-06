@@ -195,6 +195,156 @@ def format_interfaces(api, quick):
     return "\n".join(lines)
 
 
+def format_dhcp(api, quick):
+    """格式化 DHCP 信息"""
+    lines = [
+        "📋 DHCP 配置",
+        "=" * 60,
+    ]
+    
+    # DHCP 服务器
+    lines.append("\n🖥️ DHCP 服务器:")
+    servers = quick.network.get_dhcp_servers()
+    for srv in servers:
+        name = srv.get('name', 'N/A')
+        iface = srv.get('interface', 'N/A')
+        lines.append(f"  - {name} on {iface}")
+    
+    # DHCP 租约
+    lines.append("\n📝 DHCP 租约:")
+    leases = quick.network.get_dhcp_leases()
+    if leases:
+        for i, lease in enumerate(leases[:20], 1):  # 最多显示 20 条
+            ip = lease.get('address', 'N/A')
+            mac = lease.get('mac-address', 'N/A')
+            host = lease.get('host-name', 'N/A')
+            status = lease.get('status', 'N/A')
+            lines.append(f"  {i}. {ip} - {mac}" + (f" ({host})" if host else "") + f" [{status}]")
+        if len(leases) > 20:
+            lines.append(f"  ... 还有 {len(leases) - 20} 条租约")
+    else:
+        lines.append("  (无租约)")
+    
+    return "\n".join(lines)
+
+
+def format_arp(api, quick):
+    """格式化 ARP 表"""
+    lines = [
+        "📋 ARP 表",
+        "=" * 60,
+    ]
+    
+    arp_entries = quick.network.get_arp()
+    if arp_entries:
+        lines.append(f"\n共 {len(arp_entries)} 条记录:\n")
+        for i, entry in enumerate(arp_entries[:30], 1):  # 最多显示 30 条
+            ip = entry.get('address', 'N/A')
+            mac = entry.get('mac-address', 'N/A')
+            iface = entry.get('interface', 'N/A')
+            lines.append(f"  {i}. {ip} → {mac} ({iface})")
+        if len(arp_entries) > 30:
+            lines.append(f"  ... 还有 {len(arp_entries) - 30} 条记录")
+    else:
+        lines.append("  (无记录)")
+    
+    return "\n".join(lines)
+
+
+def format_wireguard(api, quick):
+    """格式化 WireGuard 信息"""
+    lines = [
+        "🔐 WireGuard 配置",
+        "=" * 60,
+    ]
+    
+    peers = quick.network.get_wireguard_peers()
+    if peers:
+        lines.append(f"\n共 {len(peers)} 个对等体:\n")
+        for i, peer in enumerate(peers, 1):
+            name = peer.get('name', 'N/A')
+            pubkey = peer.get('public-key', 'N/A')[:20] + '...' if peer.get('public-key') else 'N/A'
+            endpoint = peer.get('endpoint', 'N/A')
+            allowed = peer.get('allowed-address', 'N/A')
+            lines.append(f"  {i}. {name}")
+            lines.append(f"     公钥：{pubkey}")
+            lines.append(f"     端点：{endpoint}")
+            lines.append(f"     允许：{allowed}")
+    else:
+        lines.append("  (无 WireGuard 对等体)")
+    
+    return "\n".join(lines)
+
+
+def format_users(api, quick):
+    """格式化用户信息"""
+    lines = [
+        "👤 用户配置",
+        "=" * 60,
+    ]
+    
+    # 系统用户
+    lines.append("\n🔐 系统用户:")
+    users = quick.system.get_users()
+    for user in users:
+        name = user.get('name', 'N/A')
+        group = user.get('group', 'N/A')
+        disabled = user.get('disabled', '') == 'true'
+        status = "⏸️" if disabled else "✅"
+        lines.append(f"  {status} {name} ({group})")
+    
+    # PPP 用户
+    ppp_users = quick.user.get_ppp_users()
+    if ppp_users:
+        lines.append(f"\n📞 PPP 用户 ({len(ppp_users)}):")
+        for user in ppp_users[:10]:
+            name = user.get('name', 'N/A')
+            service = user.get('service', 'N/A')
+            lines.append(f"  - {name} ({service})")
+        if len(ppp_users) > 10:
+            lines.append(f"  ... 还有 {len(ppp_users) - 10} 个用户")
+    
+    return "\n".join(lines)
+
+
+def format_logs(api, quick):
+    """格式化日志信息"""
+    lines = [
+        "📝 系统日志 (最近 20 条)",
+        "=" * 60,
+    ]
+    
+    logs = quick.system.get_recent_logs(20)
+    if logs:
+        for log in logs:
+            time = log.get('time', 'N/A')
+            topics = log.get('topics', 'N/A')
+            message = log.get('message', 'N/A')
+            lines.append(f"  [{time}] {topics}: {message}")
+    else:
+        lines.append("  (无日志)")
+    
+    return "\n".join(lines)
+
+
+def format_services(api, quick):
+    """格式化系统服务"""
+    lines = [
+        "🔧 系统服务",
+        "=" * 60,
+    ]
+    
+    services = quick.system.get_services()
+    for svc in services:
+        name = svc.get('name', 'N/A')
+        port = svc.get('port', 'N/A')
+        disabled = svc.get('disabled', '') == 'true'
+        status = "⏸️" if disabled else "✅"
+        lines.append(f"  {status} {name} (端口：{port})")
+    
+    return "\n".join(lines)
+
+
 def execute_command(device, command):
     """
     执行 MikroTik 命令
@@ -246,6 +396,18 @@ def execute_command(device, command):
             result = format_firewall(api, quick)
         elif 'interface' in command.lower() or '接口' in command:
             result = format_interfaces(api, quick)
+        elif 'dhcp' in command.lower():
+            result = format_dhcp(api, quick)
+        elif 'arp' in command.lower():
+            result = format_arp(api, quick)
+        elif 'wireguard' in command.lower() or 'wg' in command.lower():
+            result = format_wireguard(api, quick)
+        elif 'user' in command.lower() or '用户' in command:
+            result = format_users(api, quick)
+        elif 'log' in command.lower() or '日志' in command:
+            result = format_logs(api, quick)
+        elif 'service' in command.lower() or '服务' in command:
+            result = format_services(api, quick)
         else:
             # 执行自定义命令
             results = api.run_command(command)
