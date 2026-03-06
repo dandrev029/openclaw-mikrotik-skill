@@ -653,6 +653,111 @@ def format_neighbors(api, quick):
     return "\n".join(lines)
 
 
+def format_scan(api, quick):
+    """格式化网络扫描结果（Winbox 方式 + 多来源）"""
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mikrotik-api'))
+    from scanner import MikroTikScanner
+    
+    lines = [
+        "📡 网络扫描",
+        "=" * 60,
+    ]
+    
+    all_devices = {}  # 用 MAC 地址去重
+    scanner = MikroTikScanner(timeout=5.0)
+    
+    # 方法 1: 监听广播报文（类似 Winbox）
+    print("🔍 方法 1: 监听广播报文...")
+    broadcast_devices = scanner.listen_for_broadcasts()
+    for dev in broadcast_devices:
+        mac = dev.get('mac', '')
+        if mac:
+            all_devices[mac] = dev
+    
+    # 方法 2: 从当前设备获取邻居
+    print("\n🔍 方法 2: 邻居发现...")
+    neighbors = scanner.from_neighbors(
+        api.host, 
+        api.username, 
+        api.password
+    )
+    for dev in neighbors:
+        mac = dev.get('mac', '')
+        if mac and mac not in all_devices:
+            all_devices[mac] = dev
+    
+    # 方法 3: 从 ARP 表发现
+    print("\n🔍 方法 3: ARP 表...")
+    arp_entries = quick.network.get_arp()
+    arp_count = 0
+    for entry in arp_entries:
+        ip = entry.get('address', '')
+        mac = entry.get('mac-address', '')
+        interface = entry.get('interface', '')
+        
+        # 跳过空 MAC 和广播 MAC
+        if not mac or mac == '00:00:00:00:00:00' or mac.startswith('33:33'):
+            continue
+        
+        # 如果 MAC 已经存在，跳过
+        if mac in all_devices:
+            continue
+        
+        # 检查是否是 MikroTik 设备（通过 OUI 前缀）
+        # MikroTik 的 OUI: 00:0C:42, 4C:5E:0C, D4:CA:6D 等
+        mikrotik_ouis = ['00:0C:42', '4C:5E:0C', 'D4:CA:6D', 'CC:2D:E0']
+        is_mikrotik = any(mac.startswith(oui) for oui in mikrotik_ouis)
+        
+        # 或者通过接口名判断（wireguard 对端通常是 MikroTik）
+        is_wireguard = 'wireguard' in interface.lower()
+        
+        if is_mikrotik or is_wireguard:
+            device = {
+                'ip': ip,
+                'mac': mac,
+                'interface': interface,
+                'identity': 'MikroTik' if is_mikrotik else f'MikroTik ({interface})',
+                'source': 'arp'
+            }
+            all_devices[mac] = device
+            arp_count += 1
+            print(f"  ✅ 发现：{device['identity']} ({ip})")
+    
+    if arp_count == 0:
+        print("  (ARP 表中未发现新的 MikroTik 设备)")
+    
+    # 方法 4: 检查默认网关
+    print("\n🔍 方法 4: 检查网关...")
+    routes = quick.network.get_routes()
+    for route in routes:
+        if route.get('dst-address') == '0.0.0.0/0':
+            gateway = route.get('gateway', '')
+            if gateway:
+                # 查找网关的 MAC
+                for entry in arp_entries:
+                    if entry.get('address') == gateway:
+                        mac = entry.get('mac-address', '')
+                        if mac and mac not in all_devices:
+                            device = {
+                                'ip': gateway,
+                                'mac': mac,
+                                'identity': 'MikroTik (网关)',
+                                'source': 'gateway'
+                            }
+                            all_devices[mac] = device
+                            print(f"  ✅ 发现网关：{gateway}")
+                        break
+    
+    scanner.discovered_devices = list(all_devices.values())
+    
+    # 格式化结果
+    lines.append(scanner.format_results())
+    
+    return "\n".join(lines)
+
+
 def format_connections(api, quick):
     """格式化活动连接统计"""
     lines = [
@@ -949,6 +1054,8 @@ def execute_command(device, command):
                         result += f"  状态：{r.get('status')}"
             else:
                 result = "(无结果)"
+        elif 'scan' in command.lower() or '扫描' in command.lower():
+            result = format_scan(api, quick)
         else:
             # 执行自定义命令
             results = api.run_command(command)
