@@ -501,6 +501,187 @@ def format_bridge(api, quick):
     return "\n".join(lines)
 
 
+def format_health(api, quick):
+    """格式化系统健康信息"""
+    lines = [
+        "🌡️ 系统健康",
+        "=" * 60,
+    ]
+    
+    # 系统资源
+    resource = quick.system.get_resource()
+    lines.append(f"\n💻 系统资源:")
+    lines.append(f"  CPU 负载：{resource.get('cpu-load', 'N/A')}%")
+    
+    # 内存
+    free_mem = int(resource.get('free-memory', 0)) / 1024 / 1024
+    total_mem = int(resource.get('total-memory', 1)) / 1024 / 1024
+    used_mem = total_mem - free_mem
+    mem_percent = (used_mem / total_mem * 100) if total_mem > 0 else 0
+    lines.append(f"  内存使用：{used_mem:.1f}MB / {total_mem:.1f}MB ({mem_percent:.1f}%)")
+    
+    # 存储
+    free_hdd = int(resource.get('free-hdd-space', 0)) / 1024 / 1024
+    total_hdd = int(resource.get('total-hdd-space', 1)) / 1024 / 1024
+    used_hdd = total_hdd - free_hdd
+    hdd_percent = (used_hdd / total_hdd * 100) if total_hdd > 0 else 0
+    lines.append(f"  存储使用：{used_hdd:.1f}MB / {total_hdd:.1f}MB ({hdd_percent:.1f}%)")
+    
+    # 硬件健康状态（温度、电压、风扇）
+    health = quick.system.get_health()
+    if health:
+        lines.append(f"\n🔧 硬件状态:")
+        
+        # 温度
+        temperature = health.get('temperature', '')
+        if temperature:
+            temp_value = temperature.replace('°C', '').strip()
+            try:
+                temp_num = float(temp_value)
+                if temp_num > 70:
+                    temp_icon = "🔥"
+                elif temp_num > 50:
+                    temp_icon = "⚠️"
+                else:
+                    temp_icon = "✅"
+                lines.append(f"  {temp_icon} 温度：{temperature}")
+            except:
+                lines.append(f"  🌡️ 温度：{temperature}")
+        
+        # 电压
+        voltage = health.get('voltage', '')
+        if voltage:
+            lines.append(f"  ⚡ 电压：{voltage}")
+        
+        # 风扇状态
+        psu1_state = health.get('psu1-state', '')
+        psu2_state = health.get('psu2-state', '')
+        fan1_state = health.get('fan1-state', '')
+        fan2_state = health.get('fan2-state', '')
+        
+        if psu1_state:
+            psu1_icon = "✅" if psu1_state == 'ok' else "❌"
+            lines.append(f"  {psu1_icon} 电源 1: {psu1_state}")
+        if psu2_state:
+            psu2_icon = "✅" if psu2_state == 'ok' else "❌"
+            lines.append(f"  {psu2_icon} 电源 2: {psu2_state}")
+        if fan1_state:
+            fan1_icon = "✅" if fan1_state == 'ok' else "❌"
+            lines.append(f"  {fan1_icon} 风扇 1: {fan1_state}")
+        if fan2_state:
+            fan2_icon = "✅" if fan2_state == 'ok' else "❌"
+            lines.append(f"  {fan2_icon} 风扇 2: {fan2_state}")
+        
+        # 其他健康指标
+        for key, value in health.items():
+            if key not in ['temperature', 'voltage', 'psu1-state', 'psu2-state', 'fan1-state', 'fan2-state']:
+                if 'temperature' in key.lower() or 'voltage' in key.lower() or 'fan' in key.lower():
+                    lines.append(f"  🔧 {key}: {value}")
+    else:
+        lines.append(f"\n🔧 硬件状态：不支持或未配置")
+    
+    # 运行时间
+    uptime = resource.get('uptime', 'N/A')
+    lines.append(f"\n⏱️ 运行时间：{uptime}")
+    
+    # 看门狗状态
+    watchdog = quick.system.get_watchdog()
+    if watchdog:
+        lines.append(f"\n🐕 看门狗:")
+        enabled = watchdog.get('watchdog-timer', '') != 'no'
+        lines.append(f"  状态：{'✅ 已启用' if enabled else '❌ 已禁用'}")
+        if watchdog.get('watchdog-timer', '') != 'no':
+            lines.append(f"  超时：{watchdog.get('watchdog-timer', 'N/A')}")
+    
+    return "\n".join(lines)
+
+
+def format_scheduler(api, quick):
+    """格式化计划任务"""
+    lines = [
+        "📅 计划任务",
+        "=" * 60,
+    ]
+    
+    schedulers = quick.system.get_scheduler()
+    if schedulers:
+        lines.append(f"\n共 {len(schedulers)} 个任务:\n")
+        for i, sched in enumerate(schedulers[:20], 1):
+            name = sched.get('name', 'N/A')
+            interval = sched.get('interval', 'N/A')
+            on_event = sched.get('on-event', 'N/A')
+            disabled = sched.get('disabled', '') == 'true'
+            status = "⏸️" if disabled else "✅"
+            lines.append(f"  {status} [{i}] {name}")
+            lines.append(f"      间隔：{interval}")
+            lines.append(f"      执行：{on_event}")
+        if len(schedulers) > 20:
+            lines.append(f"  ... 还有 {len(schedulers) - 20} 个任务")
+    else:
+        lines.append("  (无计划任务)")
+    
+    return "\n".join(lines)
+
+
+def format_neighbors(api, quick):
+    """格式化邻居设备发现"""
+    lines = [
+        "📡 邻居设备",
+        "=" * 60,
+    ]
+    
+    neighbors = quick.network.get_neighbors()
+    if neighbors:
+        lines.append(f"\n共 {len(neighbors)} 个邻居设备:\n")
+        for i, nbr in enumerate(neighbors[:20], 1):
+            identity = nbr.get('identity', 'N/A')
+            platform = nbr.get('platform', 'N/A')
+            address = nbr.get('address', 'N/A')
+            interface = nbr.get('interface', 'N/A')
+            mac = nbr.get('mac-address', 'N/A')
+            lines.append(f"  [{i}] {identity}")
+            lines.append(f"      型号：{platform}")
+            lines.append(f"      地址：{address}")
+            lines.append(f"      接口：{interface}")
+            if mac != 'N/A':
+                lines.append(f"      MAC: {mac}")
+        if len(neighbors) > 20:
+            lines.append(f"  ... 还有 {len(neighbors) - 20} 个设备")
+    else:
+        lines.append("  (未发现邻居设备)")
+    
+    return "\n".join(lines)
+
+
+def format_connections(api, quick):
+    """格式化活动连接统计"""
+    lines = [
+        "🔗 活动连接",
+        "=" * 60,
+    ]
+    
+    # 连接统计
+    stats = quick.firewall.get_connection_stats()
+    lines.append(f"\n📊 连接统计:")
+    lines.append(f"  活跃连接数：{stats.get('total', 'N/A')}")
+    
+    # 活动连接（前 20 条）
+    connections = quick.firewall.get_active_connections(20)
+    if connections:
+        lines.append(f"\n🔥 TOP 连接:")
+        for i, conn in enumerate(connections[:20], 1):
+            src = conn.get('src-address', 'N/A')
+            dst = conn.get('dst-address', 'N/A')
+            proto = conn.get('protocol', 'N/A')
+            sport = conn.get('src-port', 'N/A')
+            dport = conn.get('dst-port', 'N/A')
+            lines.append(f"  {i}. {src}:{sport} → {dst}:{dport} ({proto})")
+        if len(connections) == 20:
+            lines.append(f"  ... 还有更多连接")
+    
+    return "\n".join(lines)
+
+
 def format_routing(api, quick):
     """格式化路由配置"""
     lines = [
@@ -547,7 +728,8 @@ def format_routing(api, quick):
         if ospf_neighbors:
             lines.append(f"\n🔵 OSPF 邻居 ({len(ospf_neighbors)}):")
             for nbr in ospf_neighbors[:10]:
-                addr = nbr.get('neighbor-address', 'N/A')
+                # 尝试多个字段名（不同 RouterOS 版本字段名可能不同）
+                addr = nbr.get('neighbor-address') or nbr.get('address') or nbr.get('router-id') or 'N/A'
                 state = nbr.get('state', 'N/A')
                 interface = nbr.get('interface', 'N/A')
                 state_icon = "✅" if state == 'Full' else "⏳"
@@ -744,6 +926,29 @@ def execute_command(device, command):
             result = format_queues(api, quick)
         elif 'route' in command.lower() or 'routing' in command.lower() or '路由' in command.lower() or 'ospf' in command.lower() or 'bgp' in command.lower():
             result = format_routing(api, quick)
+        elif 'health' in command.lower() or '温度' in command.lower() or '电压' in command.lower() or '风扇' in command.lower() or '硬件' in command.lower():
+            result = format_health(api, quick)
+        elif 'scheduler' in command.lower() or '计划' in command.lower() or '定时' in command.lower() or '任务' in command.lower():
+            result = format_scheduler(api, quick)
+        elif 'neighbor' in command.lower() or '邻居' in command.lower() or '设备发现' in command.lower():
+            result = format_neighbors(api, quick)
+        elif 'connection' in command.lower() or '连接' in command.lower() or '活动连接' in command.lower():
+            result = format_connections(api, quick)
+        elif 'ping' in command.lower():
+            # 提取目标地址
+            import re
+            match = re.search(r'(\d+\.\d+\.\d+\.\d+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})', command)
+            target = match.group(1) if match else '8.8.8.8'
+            results = api.run_command('/ping', [f'=address={target}', '=count=5'])
+            if results:
+                result = f"🏓 Ping {target}:\n"
+                for r in results:
+                    if 'sent' in r:
+                        result += f"  发送：{r.get('sent')}, 接收：{r.get('received')}, 丢失：{r.get('lost')}"
+                    elif 'status' in r:
+                        result += f"  状态：{r.get('status')}"
+            else:
+                result = "(无结果)"
         else:
             # 执行自定义命令
             results = api.run_command(command)

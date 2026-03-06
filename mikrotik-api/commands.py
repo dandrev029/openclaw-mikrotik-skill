@@ -63,6 +63,15 @@ class SystemCommands:
         """获取日志配置"""
         return self.api.run_command('/system/logging/print')
     
+    def get_scheduler(self) -> List[Dict]:
+        """获取定时任务列表"""
+        return self.api.run_command('/system/scheduler/print')
+    
+    def get_watchdog(self) -> Dict:
+        """获取看门狗配置"""
+        results = self.api.run_command('/system/watchdog/print')
+        return results[0] if results else {}
+    
     def get_recent_logs(self, count: int = 20) -> List[Dict]:
         """
         获取最近日志
@@ -297,6 +306,52 @@ class RoutingCommands:
     def get_mpls_ldp_neighbors(self) -> List[Dict]:
         """获取 MPLS LDP 邻居"""
         return self.api.run_command('/mpls/ldp/neighbor/print')
+    
+    def get_ping(self, host: str, count: int = 5) -> List[Dict]:
+        """
+        执行 Ping 测试
+        
+        Args:
+            host: 目标地址
+            count: Ping 次数
+        """
+        return self.api.run_command('/ping', [f'=address={host}', f'=count={count}'])
+    
+    def get_traceroute(self, host: str) -> List[Dict]:
+        """
+        执行 Traceroute
+        
+        Args:
+            host: 目标地址
+        """
+        return self.api.run_command('/tool/traceroute', [f'=address={host}'])
+    
+    def get_dns_cache(self) -> List[Dict]:
+        """获取 DNS 缓存"""
+        return self.api.run_command('/ip/dns/cache/print')
+    
+    def get_bandwidth_test(self, interface: str = '') -> List[Dict]:
+        """
+        带宽测试（需要两端支持）
+        
+        Args:
+            interface: 指定接口
+        """
+        if interface:
+            return self.api.run_command('/tool/bandwidth-test', [f'=interface={interface}'])
+        return self.api.run_command('/tool/bandwidth-server/print')
+    
+    def get_poe(self) -> List[Dict]:
+        """获取 PoE 状态"""
+        return self.api.run_command('/interface/ethernet/poe/print')
+    
+    def get_usb(self) -> List[Dict]:
+        """获取 USB 设备列表"""
+        return self.api.run_command('/system/usb/print')
+    
+    def get_storage(self) -> List[Dict]:
+        """获取存储设备信息"""
+        return self.api.run_command('/disk/print')
 
 
 class UserCommands:
