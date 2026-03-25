@@ -1,249 +1,213 @@
-# MikroTik RouterOS Skill for OpenClaw
+MikroTik RouterOS Skill for OpenClaw
 
-通过 API 连接和管理 MikroTik RouterOS 设备的 OpenClaw Skill。
+An OpenClaw Skill for connecting to and managing MikroTik RouterOS devices through the API.
 
-## 功能
+Features
 
-- ✅ 查看设备状态（系统信息、CPU、内存、存储）
-- ✅ 查看防火墙规则（filter、NAT、mangle）
-- ✅ 查看网络配置（接口、IP 地址、路由、DNS）
-- ✅ 执行自定义 RouterOS 命令
-- ✅ 支持多设备连接
-- ✅ 网络扫描（类似 Winbox，无需配置）
-- ✅ 交互式开局流程
+- View device status, including system information, CPU, memory, and storage
+- View firewall rules, including filter, NAT, and mangle
+- View network configuration, including interfaces, IP addresses, routes, and DNS
+- Run custom RouterOS commands
+- Support connections to multiple devices
+- Scan the network, similar to Winbox, with no pre-configuration required
+- Interactive first-time setup flow
 
-## 🚀 快速开始（新用户开局）
+Quick Start for New Users
 
-### 方式一：交互式开局（推荐）
+Option 1: Interactive setup (recommended)
 
-**1. 说出口令**：
-```
-mikrotik 开局
-```
+1. Say the trigger command:
+mikrotik setup
 
-**2. AI 自动扫描**：
-```
-📡 扫描完成！发现 3 个设备:
+2. AI automatically scans the network:
+Scan complete! Found 3 devices:
 
 [1] 192.168.1.10 (00:0C:42:AA:BB:CC)
 [2] 192.168.1.20 (4C:5E:0C:DD:EE:FF)
 [3] 192.168.1.1 (D4:CA:6D:11:22:33)
-```
 
-**3. 告诉 AI 账号密码**：
-```
-全部使用 admin/空密码
-```
+3. Tell the AI the username and password:
+Use admin with no password for all devices
 
-**4. AI 测试连接并保存**：
-```
-✅ 连接成功！配置已保存到 TOOLS.md
-```
+4. AI tests the connection and saves the configuration:
+Connection successful! Configuration saved to TOOLS.md
 
-**5. 开始使用**：
-```
-查看 device1 状态
+5. Start using it:
+Check device1 status
 mikrotik office firewall
-```
 
-### 方式二：手动配置
+Option 2: Manual configuration
 
-在 `~/.openclaw/workspace/TOOLS.md` 中添加：
+Add the following to ~/.openclaw/workspace/TOOLS.md:
 
-```markdown
-### MikroTik 设备
-- **office**: 192.168.1.1, admin, 空密码
-- **home**: 192.168.88.1, admin, yourpassword
-```
+### MikroTik Devices
+- office: 192.168.1.1, admin, no password
+- home: 192.168.88.1, admin, yourpassword
 
-## 安装
+Installation
 
-### 方法 1: 手动安装（当前可用）
+Method 1: Manual installation (available now)
 
-```bash
-# 克隆仓库
+# Clone the repository
 git clone https://github.com/YOUR_USERNAME/openclaw-mikrotik-skill.git
 cd openclaw-mikrotik-skill
 
-# 复制到 OpenClaw skills 目录
+# Copy to the OpenClaw skills directory
 cp -r mikrotik /usr/lib/node_modules/openclaw/skills/
 
-# 重启 OpenClaw Gateway
+# Restart OpenClaw Gateway
 openclaw gateway restart
-```
 
-### 方法 2: 通过 ClawHub（即将上线）
+Method 2: Via ClawHub (coming soon)
 
-```bash
-# 待发布到 ClawHub 后可用
+# Available after publishing to ClawHub
 npx clawhub install mikrotik
-```
 
+Configuration
 
+Add your MikroTik device information to TOOLS.md:
 
-## 配置
+### MikroTik Devices
 
-在 `TOOLS.md` 中添加 MikroTik 设备信息：
+- office: 192.168.1.1, admin, no password
+- home: 192.168.88.1, admin, yourpassword
 
-```markdown
-### MikroTik 设备
+Usage
 
-- **office**: 192.168.1.1, admin, 空密码
-- **home**: 192.168.88.1, admin, yourpassword
-```
+Natural language commands
 
-## 用法
-
-### 自然语言命令
-
-```
-查看 mikrotik 设备状态
-mikrotik 防火墙配置
-检查路由器运行情况
-查看网络接口
-查看无线客户端
-mikrotik office 客户端
+Check MikroTik device status
+Show MikroTik firewall configuration
+Check router health
+Show network interfaces
+Show wireless clients
+mikrotik office clients
 mikrotik ap wifi
-在 mikrotik 上执行 /system/resource/print
-```
+Run /system/resource/print on MikroTik
 
-### 可用命令
+Available commands
 
-| 命令 | 说明 |
-|------|------|
-| `状态` / `status` | 查看设备状态（CPU、内存、运行时间） |
-| `防火墙` / `firewall` | 查看防火墙规则（filter、NAT） |
-| `接口` / `interface` | 查看网络接口列表 |
-| `客户端` / `client` / `无线` / `wifi` | **查看无线客户端连接（CAPsMAN）** ⭐ |
-| `路由` / `route` | 查看路由表 |
-| `DHCP` | 查看 DHCP 配置和租约 |
-| `ARP` | 查看 ARP 表 |
-| `流量` / `traffic` | 查看接口流量统计 |
-| `WireGuard` / `wg` | 查看 WireGuard 隧道状态 |
-| `扫描` / `scan` | 扫描局域网设备（无需配置） |
+- status: View device status, including CPU, memory, and uptime
+- firewall: View firewall rules, including filter and NAT
+- interface / interfaces: View the list of network interfaces
+- client / clients / wireless / wifi: View connected wireless clients (CAPsMAN)
+- route / routes: View the routing table
+- dhcp: View DHCP configuration and leases
+- arp: View the ARP table
+- traffic: View interface traffic statistics
+- wireguard / wg: View WireGuard tunnel status
+- scan: Scan LAN devices with no configuration required
 
-### 命令行工具
+Command-line tool
 
-```bash
 cd mikrotik-api
-python3 cli.py 192.168.1.1 status      # 查看设备状态
-python3 cli.py 192.168.1.1 firewall    # 查看防火墙
-python3 cli.py 192.168.1.1 interfaces  # 查看接口
-python3 cli.py 192.168.1.1 routes      # 查看路由
-```
+python3 cli.py 192.168.1.1 status
+python3 cli.py 192.168.1.1 firewall
+python3 cli.py 192.168.1.1 interfaces
+python3 cli.py 192.168.1.1 routes
 
-### Python API
+Python API
 
-```python
 from mikrotik_api import MikroTikAPI, QuickCommands
 
 with MikroTikAPI('192.168.1.1') as api:
     api.login()
     quick = QuickCommands(api)
     quick.print_status()
-```
 
-## 示例输出
+Example output
 
-### 设备状态
+Device status
 
-```
-📡 MikroTik RouterOS 设备状态
+MikroTik RouterOS Device Status
 ============================================================
-  设备名：OFFICE
-  版本：7.21.2 (stable)
-  运行时间：1w2d9h9m39s
+  Device Name: OFFICE
+  Version: 7.21.2 (stable)
+  Uptime: 1w2d9h9m39s
   CPU: MIPS 1004Kc V2.15 @ 880MHz
-  CPU 负载：1%
-  内存：61.6MB / 256.0MB
-  存储：3.6MB / 16.0MB
-============================================================
-```
-
-### 无线客户端（v1.8.1 新增）⭐
-
-```
-📶 无线客户端 (CAPsMAN)
+  CPU Load: 1%
+  Memory: 61.6MB / 256.0MB
+  Storage: 3.6MB / 16.0MB
 ============================================================
 
-✅ 已连接 2 个无线客户端:
+Wireless clients (new in v1.8.1)
 
-  【客户端 1】
-    MAC: 00:11:22:33:44:55
-    SSID: MyWiFi | 接口：cap2
-    信号：-49 ⭐⭐⭐
-    速率：TX 702Mbps-80MHz/2S | RX 585Mbps-80MHz/2S
-    连接时间：1d47m
-    IP 地址：192.168.1.101
-       流量：TX 1.8GB / RX 1.2GB
+Wireless Clients (CAPsMAN)
+============================================================
 
-  【客户端 2】
-    MAC: AA:BB:CC:DD:EE:FF
-    SSID: MyWiFi | 接口：cap2
-    信号：-34 ⭐⭐⭐⭐⭐
-    速率：TX 866.6Mbps-80MHz/2S/SGI | RX 702Mbps-80MHz/2S
-    连接时间：20m
-    IP 地址：192.168.1.102
-       流量：TX 29.7MB / RX 892KB
-```
+2 wireless clients connected:
 
-## 依赖
+[Client 1]
+  MAC: 00:11:22:33:44:55
+  SSID: MyWiFi | Interface: cap2
+  Signal: -49
+  Rate: TX 702Mbps-80MHz/2S | RX 585Mbps-80MHz/2S
+  Connected Time: 1d47m
+  IP Address: 192.168.1.101
+  Traffic: TX 1.8GB / RX 1.2GB
+
+[Client 2]
+  MAC: AA:BB:CC:DD:EE:FF
+  SSID: MyWiFi | Interface: cap2
+  Signal: -34
+  Rate: TX 866.6Mbps-80MHz/2S/SGI | RX 702Mbps-80MHz/2S
+  Connected Time: 20m
+  IP Address: 192.168.1.102
+  Traffic: TX 29.7MB / RX 892KB
+
+Dependencies
 
 - Python 3.6+
 - OpenClaw 2026.3.2+
-- MikroTik RouterOS API 已启用（默认端口 8728）
+- MikroTik RouterOS API enabled, default port 8728
 
-## 注意事项
+Notes
 
-1. 确保 RouterOS 的 API 服务已启用（`/ip/service/print` 查看）
-2. 默认端口 8728，SSL 端口 8729
-3. 空密码设备注意安全风险
-4. 部分命令需要管理员权限
+1. Make sure the RouterOS API service is enabled. Check with /ip/service/print
+2. Default API port is 8728, SSL port is 8729
+3. Devices with no password present a security risk
+4. Some commands require administrator privileges
 
-## 文件结构
+File structure
 
-```
 mikrotik/
-├── SKILL.md           # Skill 说明和配置
-├── handler.py         # 命令处理器
-├── README.md          # 本文件
-└── mikrotik-api/      # Python API 客户端
+├── SKILL.md
+├── handler.py
+├── README.md
+└── mikrotik-api/
     ├── __init__.py
-    ├── client.py      # 核心 API 客户端
-    ├── commands.py    # 常用命令封装
-    ├── cli.py         # 命令行工具
-    └── README.md      # API 文档
-```
+    ├── client.py
+    ├── commands.py
+    ├── cli.py
+    └── README.md
 
-## 开发
+Development
 
-### 测试
+Testing
 
-```bash
 cd mikrotik-api
 python3 cli.py 192.168.1.1 status
-```
 
-### 添加新功能
+Adding new features
 
-1. 在 `commands.py` 中添加新方法
-2. 在 `handler.py` 中添加命令处理
-3. 更新 `SKILL.md` 文档
+1. Add a new method in commands.py
+2. Add command handling in handler.py
+3. Update the SKILL.md documentation
 
-## 贡献
+Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and pull requests are welcome.
 
-## 许可证
+License
 
 MIT License
 
-## 作者
+Author
 
-虾哥 🤖
+Xia Ge
 
-## 相关链接
+Related links
 
-- [OpenClaw 文档](https://docs.openclaw.ai)
-- [MikroTik API 文档](https://help.mikrotik.com/docs/display/ROS/API)
-- [ClawHub](https://clawhub.com)
+OpenClaw Documentation: https://docs.openclaw.ai
+MikroTik API Documentation: https://help.mikrotik.com/docs/display/ROS/API
+ClawHub: https://clawhub.com
